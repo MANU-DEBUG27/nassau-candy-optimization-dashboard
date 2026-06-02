@@ -7,7 +7,7 @@ import plotly.express as px
 
 
     # PAGE CONFIG
-st.set_page_config( page_title="Nassau Optimization System", layout="wide")
+st.set_page_config( page_title="Nassau Optimization System", page_icon="📊", layout="wide") 
 
     # LOAD DATASET
 df = pd.read_csv("data/Nassau Candy Distributor.csv")
@@ -274,6 +274,11 @@ plt.xticks(rotation=45)
 st.pyplot(fig4)
 
 
+st.subheader("📅 Sales Trend")
+sales_trend = filtered_df.groupby( "Order Date")["Sales"].sum()
+st.line_chart(sales_trend)
+
+
 st.subheader("Sales vs Profit")
 fig5, ax5 = plt.subplots(figsize=(8,5))
 ax5.scatter( df["Sales"], df["Gross Profit"])
@@ -289,12 +294,18 @@ ax6.pie( factory_sales, labels=factory_sales.index, autopct="%1.1f%%")
 st.pyplot(fig6)
 
 
+st.subheader("📊 Sales Distribution")
+fig7 = px.histogram( filtered_df, x="Sales")
+st.plotly_chart(fig7)
+
 fig = px.scatter( df, x="Sales",  y="Gross Profit", color="Factory")
 st.plotly_chart(fig)
 
 
          # KPI CARDS
-col1, col2, col3 = st.columns(3)
+st.subheader("📊 Key Performance Indicators")
+
+col1, col2, col3, col4 = st.columns(4)
 
 col1.metric( "Total Sales", f"${filtered_df['Sales'].sum():,.0f}")
 
@@ -302,8 +313,20 @@ col2.metric( "Total Profit", f"${filtered_df['Gross Profit'].sum():,.0f}")
 
 col3.metric( "Average Distance", f"{filtered_df['Distance_km'].mean():.1f} km")
 
+recommended_factory = filtered_df["Factory"].mode()[0]
 
-st.subheader("Top Products")
+col4.metric( "Recommended Factory", recommended_factory)
+
+st.subheader("🤖 AI Prediction")
+
+predicted_lead_time = filtered_df["Lead_Time"].mean()
+
+recommended_factory = filtered_df["Factory"].mode()[0]
+
+st.success( f"Predicted Lead Time: {predicted_lead_time:.1f} Days")
+st.success( f"Recommended Factory: {recommended_factory}")
+
+st.subheader("Top Selling Products")
 top_products = filtered_df.groupby( "Product Name")["Sales"].sum().reset_index()
 top_products = top_products.sort_values( by="Sales", ascending=False).head(10)
 st.dataframe(top_products)
@@ -317,4 +340,49 @@ st.download_button(
     mime="text/csv"
 )
 
+st.subheader("Factory Locations")
 
+factory_map_df = pd.DataFrame({
+    "Factory": [
+        "Lot's O' Nuts",
+        "Wicked Choccy's",
+        "Sugar Shack",
+        "Secret Factory",
+        "The Other Factory"
+    ],
+    "lat": [
+        32.881893,
+        32.076176,
+        48.11914,
+        41.446333,
+        35.1175
+    ],
+    "lon": [
+        -111.768036,
+        -81.088371,
+        -96.18115,
+        -90.565487,
+        -89.971107
+    ]
+})
+
+st.map(factory_map_df)
+
+
+st.markdown("---")
+
+st.markdown(
+"""
+### 🚀 Project Information
+
+**Tools Used:**
+- Python
+- Pandas
+- Streamlit
+- Plotly
+- Machine Learning
+- GitHub
+
+Created by **Mansi**
+"""
+)
