@@ -131,6 +131,11 @@ df["Distance_km"] = df.apply(calculate_distance, axis=1)
 
      # TITLE
 st.title("Nassau Candy Optimization System")
+
+st.info( """ This dashboard helps optimize factory allocation,
+    analyze sales performance, monitor profitability,and 
+    improve shipping efficiency.""")
+
 st.sidebar.header("Filters")
 
 st.header("Factory Reallocation Dashboard")
@@ -143,8 +148,13 @@ st.dataframe(df.head())
 
     # PRODUCT SELECTOR
 product = st.selectbox( "Select Product", df["Product Name"].unique()) 
+
     # FILTER DATA
-filtered_df = df[ df["Product Name"] == product]
+regions = df["Region"].unique()
+selected_region = st.sidebar.selectbox("Select Region", regions)
+
+filtered_df = df[(df["Product Name"] == product) &
+    (df["Region"] == selected_region)]
 
 st.subheader("Selected Product Data")
 st.dataframe(filtered_df.head())
@@ -205,9 +215,6 @@ st.success( f"Recommended Factory: " f"{best_factory['Factory']}")
 
 predicted_lead_time = filtered_df["Lead_Time"].mean()
 
-st.subheader("AI Predicted Lead Time")
-
-st.success(f"Estimated Lead Time: {predicted_lead_time:.2f} days")
 
 factory_map_df = pd.DataFrame({
     "Factory": [
@@ -237,11 +244,6 @@ st.subheader("Factory Locations Map")
 
 st.map(factory_map_df)
 
-regions = df["Region"].unique()
-
-selected_region = st.sidebar.selectbox("Select Region", regions)
-
-filtered_df = df[df["Region"] == selected_region]
 
 sales_chart = filtered_df.groupby( "Product Name") ["Sales"].sum().reset_index
 
@@ -280,11 +282,14 @@ st.line_chart(sales_trend)
 
 
 st.subheader("Sales vs Profit")
-fig5, ax5 = plt.subplots(figsize=(8,5))
-ax5.scatter( df["Sales"], df["Gross Profit"])
-ax5.set_xlabel("Sales")
-ax5.set_ylabel("Gross Profit")
-st.pyplot(fig5)
+fig = px.scatter(
+    filtered_df,
+    x="Sales",
+    y="Gross Profit",
+    color="Factory",
+    hover_data=["Product Name"]
+)
+st.plotly_chart(fig, use_container_width=True)
 
 
 st.subheader("Factory Sales Contribution")
@@ -366,7 +371,14 @@ factory_map_df = pd.DataFrame({
     ]
 })
 
-st.map(factory_map_df)
+st.subheader("🏭 Factory Performance")
+
+factory_performance = df.groupby("Factory").agg({
+    "Sales": "sum",
+    "Gross Profit": "sum",
+    "Lead_Time": "mean"
+})
+st.dataframe(factory_performance)
 
 
 st.markdown("---")
