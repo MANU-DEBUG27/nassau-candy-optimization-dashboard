@@ -266,23 +266,37 @@ st.subheader("Factory Locations Map")
 
 st.map(factory_map_df)
 
-st.subheader("Sales by Product")
-sales_chart = filtered_df.groupby( "Product Name") ["Sales"].sum().reset_index()
-fig, ax = plt.subplots(figsize=(10,5))
-ax.bar( sales_chart["Product Name"], sales_chart["Sales"])
-plt.xticks(rotation=90)
-st.pyplot(fig)
+sales_chart = (
+    df[df["Region"] == selected_region]
+    .groupby("Product Name")["Sales"]
+    .sum()
+    .reset_index()
+)
+
+fig = px.bar(
+    sales_chart,
+    x="Product Name",
+    y="Sales",
+    title="Sales by Product"
+)
+
+st.plotly_chart(fig, use_container_width=True)
+# st.subheader("Sales by Product")
+# sales_chart = filtered_df.groupby( "Product Name") ["Sales"].sum().reset_index()
+# fig, ax = plt.subplots(figsize=(10,5))
+# ax.bar( sales_chart["Product Name"], sales_chart["Sales"])
+# st.pyplot(fig)
 
 
 st.subheader("Profit by Factory")
 profit_chart = filtered_df.groupby( "Factory") ["Gross Profit"].sum().reset_index()
-fig2, ax2 = plt.subplots(figsize=(8,5))
+fig2, ax2 = plt.subplots(figsize=(10,5))
 ax2.bar( profit_chart["Factory"], profit_chart["Gross Profit"])
 st.pyplot(fig2)
 
 st.subheader("Distance Comparison")
 distance_chart = filtered_df.groupby( "Factory") ["Distance_km"].mean().reset_index()
-fig3, ax3 = plt.subplots(figsize=(8,5))
+fig3, ax3 = plt.subplots(figsize=(10,5))
 ax3.bar( distance_chart["Factory"], distance_chart["Distance_km"])
 st.pyplot(fig3)
 
@@ -311,11 +325,20 @@ fig = px.scatter(
 st.plotly_chart(fig, use_container_width=True)
 
 
-st.subheader("Factory Sales Contribution")
-factory_sales = df.groupby( "Factory")["Sales"].sum()
-fig6, ax6 = plt.subplots(figsize=(7,7))
-ax6.pie( factory_sales, labels=factory_sales.index, autopct="%1.1f%%")
-st.pyplot(fig6)
+# st.subheader("Factory Sales Contribution")
+# factory_sales = df.groupby( "Factory")["Sales"].sum()
+# fig6, ax6 = plt.subplots(figsize=(10,8))
+# ax6.pie( factory_sales, labels=factory_sales.index, autopct="%1.1f%%", startangle=90)
+# plt.tight_layout()
+# st.pyplot(fig6)
+
+factory_sales = (df.groupby("Factory")["Sales"].sum().reset_index())
+fig = px.pie(factory_sales,
+    names="Factory",
+    values="Sales",
+    title="Factory Sales Contribution")
+
+st.plotly_chart(fig, use_container_width=True)
 
 
 st.subheader("📊 Sales Distribution")
@@ -419,3 +442,6 @@ st.metric("R² Score", "0.87")
 Created by **Mansi**
 """
 )
+
+ #
+ # streamlit run app.py
